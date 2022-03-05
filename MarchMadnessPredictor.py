@@ -42,7 +42,7 @@ while Play:
         total_occurence = boolean_findings.sum()
 
         if(total_occurence) == 0 and TeamName != df[1][0]:
-            print('Error: Team name not found. Check KenPom and try again.')
+            print('Error: Team name not found. Check KenPom and try again (Capitalization matters!).')
             return False
 
         #the sum for the best team is still zero, so we have to account for this exception
