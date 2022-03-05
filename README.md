@@ -1,1 +1,2 @@
 # March-Madness-Matchup-Predictor
+This program uses Pythag and Log5 to determine the probability of any college basketball team (on KenPom) winning against the other, given values on https://kenpom.com/including adjusted offensive and defensive efficiency. Also calculates expected score for the game, as well as expected point return for predicting either team to win (including bonuses for upsets/higher seeds winning).
