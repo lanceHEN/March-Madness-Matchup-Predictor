@@ -35,6 +35,23 @@ df = pd.read_html(table)[0]
 # allows user to play multiple times.
 Play = True
 while Play:
+    #makes sure Team is on KenPom
+    def NameCheck(TeamName):
+        boolean_findings = df[1].str.contains(TeamName)
+
+        total_occurence = boolean_findings.sum()
+
+        if(total_occurence) != 1 and TeamName != df[1][0]:
+            print('Error: Team name not found. Check KenPom and try again.')
+            return False
+
+        #the sum for the best team is still zero, so we have to account for this exception
+        elif TeamName == df[1][0]:
+            return True
+    
+        else:
+            return True
+    
     #finds Adjusted Offensive Efficiency of team
     def AdjOSearch(Team):
         AdjO = int(df[df[1] == Team][5])
@@ -71,41 +88,107 @@ while Play:
         
         global ET
 
-        ET = (AdjTA / 67.5) * (AdjTB / 67.5) * 67.5
+        AvgTempo = df[9].mean()
+
+        ET = (AdjTA / AvgTempo) * (AdjTB / AvgTempo) * AvgTempo
 
         return ET
 
     #finally expected points for team A and team B
     def points(APointsFor, BPointsFor, APointsAgainst, BPointsAgainst):
+        
+        AvgPoints = df[5].mean()
 
         #team A expected points
-        EAP = (APointsFor / 103.7) * (BPointsAgainst / 103.7) * 103.7
+        EAP = (APointsFor / AvgPoints) * (BPointsAgainst / AvgPoints) * AvgPoints
         #accounting for expected tempo:
         EAP = EAP * (ET / 100)
 
         #team B expected points
-        EBP = (BPointsFor / 103.7) * (APointsAgainst / 103.7) * 103.7
+        EBP = (BPointsFor / AvgPoints) * (APointsAgainst / AvgPoints) * AvgPoints
         #accounting for expected tempo:
         EBP = EBP * (ET / 100)
         
         return EAP, EBP
 
     # user input and values for team A and B
-    TeamA = input('Team A Name (As seen on KenPom): ')
-    ASeed = int(input('Team A official seed: '))
+    #Team A Name + check to make sure it's on KenPom
+    NamedTeamA = False
+    while not NamedTeamA:
+        TeamA = input('Team A Name (As seen on KenPom): ')
+        if NameCheck(TeamA) == True:
+            NamedTeamA = True
+
+        else:
+            NamedTeamA = False
+
+    #Team A seed + check to make sure it's between 1 and 16
+    EnteredASeed = False
+    while not EnteredASeed:
+        try:
+            ASeed = int(input('Team A official seed: '))
+            
+            if ASeed >= 1 and ASeed <= 16:
+                EnteredASeed = True
+            
+            else:
+                print('Seed must be a number between 1 and 16. Try again.')
+                EnteredASeed = False
+
+        except:
+            print('Seed must be a number between 1 and 16. Try again.')
+            EnteredASeed = False
+    
     AdjOA = AdjOSearch(TeamA)
     AdjDA = AdjDSearch(TeamA)
     ATempo = AdjTSearch(TeamA)
 
-    # Team B:
-    TeamB = input('Team B Name (As seen on KenPom): ')
-    BSeed = int(input('Team B official seed: '))
+    # Team B name + check to make sure it's on KenPom
+    NamedTeamB = False
+    while not NamedTeamB:
+        TeamB = input('Team B Name (As seen on KenPom): ')
+        if NameCheck(TeamB) == True:
+            NamedTeamB = True
+
+        else:
+            NamedTeamB = False
+    
+    #Team B seed + check to make sure it's between 1 and 16
+    EnteredBSeed = False
+    while not EnteredBSeed:
+        try:
+            BSeed = int(input('Team B official seed: '))
+            
+            if BSeed >= 1 and BSeed <= 16:
+                EnteredBSeed = True
+            
+            else:
+                print('Seed must be a number between 1 and 16. Try again.')
+                EnteredBSeed = False
+
+        except:
+            print('Seed must be a number between 1 and 16. Try again.')
+            EnteredBSeed = False
+
     AdjOB = AdjOSearch(TeamB)
     AdjDB = AdjDSearch(TeamB)
     BTempo = AdjTSearch(TeamB)
 
-    #round needed to calculate expected points
-    round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
+    #round needed to calculate expected points + check to make sure it's a number between 1 and 6
+    EnteredRound = False
+    while not EnteredRound:
+        try:
+            round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
+            if round >= 1 and round <= 6:
+                EnteredRound = True
+
+            else:
+                print('Error: Round must be a number between 1 and 6. Try again.')
+                EnteredRound = False
+
+        except:
+            print('Error: Round must be a number between 1 and 6. Try again.')
+            EnteredRound = False
 
     #calculates team A expected winning probability: 
     PythagA = pythag(AdjOA, AdjDA)
