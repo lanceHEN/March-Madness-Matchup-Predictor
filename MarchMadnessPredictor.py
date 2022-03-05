@@ -179,7 +179,7 @@ while Play:
     while not EnteredRound:
         try:
             round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
-            if round >= 1 and round <= 6:
+            if round >= 2 and round <= 7:
                 EnteredRound = True
 
             else:
