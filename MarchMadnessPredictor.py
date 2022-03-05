@@ -54,17 +54,17 @@ while Play:
     
     #finds Adjusted Offensive Efficiency of team
     def AdjOSearch(Team):
-        AdjO = int(df[df[1] == Team][5])
+        AdjO = float(df[df[1] == Team][5])
         return(AdjO)
 
     #finds Adjusted Defensive Efficiency of team
     def AdjDSearch(Team):
-        AdjD = int(df[df[1] == Team][7])
+        AdjD = float(df[df[1] == Team][7])
         return(AdjD)
 
     #finds Adjusted Tempo of team
     def AdjTSearch(Team):
-        AdjT = int(df[df[1] == Team][9])
+        AdjT = float(df[df[1] == Team][9])
         return AdjT
     
     #calculates pythag of team, aka how "good" they are
@@ -179,7 +179,7 @@ while Play:
     while not EnteredRound:
         try:
             round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
-            if round >= 2 and round <= 7:
+            if round >= 0 and round <= 5:
                 EnteredRound = True
 
             else:
