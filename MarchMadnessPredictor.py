@@ -6,10 +6,51 @@
 
 import math
 import random
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import numpy as np
+import re
+import lxml
+
+#scrapes KenPom:
+# Base url
+base_url = 'http://kenpom.com/index.php'
+
+f = requests.get(base_url)
+soup = BeautifulSoup(f.text, 'lxml')
+table_html = soup.find_all('table', {'id': 'ratings-table'})
+
+thead = table_html[0].find_all('thead')
+
+table = table_html[0]
+for x in thead:
+    table = str(table).replace(str(x), '')
+
+#print(table)
+
+#define df (dataframe)
+df = pd.read_html(table)[0]
 
 # allows user to play multiple times.
 Play = True
 while Play:
+    #finds Adjusted Offensive Efficiency of team
+    def AdjOSearch(Team):
+        AdjO = int(df[df[1] == Team][5])
+        return(AdjO)
+
+    #finds Adjusted Defensive Efficiency of team
+    def AdjDSearch(Team):
+        AdjD = int(df[df[1] == Team][7])
+        return(AdjD)
+
+    #finds Adjusted Tempo of team
+    def AdjTSearch(Team):
+        AdjT = int(df[df[1] == Team][9])
+        return AdjT
+    
+    #calculates pythag of team, aka how "good" they are
     def pythag(AdjO, AdjD):
         
         EW = (AdjO**11.5) / ((AdjO**11.5) + (AdjD**11.5))
@@ -18,27 +59,6 @@ while Play:
 
         return EW
 
-    # user input for team A and B values
-    # Team A:
-    ASeed = int(input('Team A official seed: '))
-    AdjOA = float(input('Team A adjusted offensive efficiency: '))
-    AdjDA = float(input('Team A adjusted defensive efficiency: '))
-    ATempo = float(input('Team A Adjusted Tempo: '))
-    
-    # A expected winning probability:
-    PythagA = pythag(AdjOA, AdjDA)
-    # print(str(PythagA))
-
-    # Team B:
-    BSeed = int(input('Team B official seed: '))
-    AdjOB = float(input('Team B adjusted offensive efficiency: '))
-    AdjDB = float(input('Team B adjusted defensive efficiency: '))
-    BTempo = float(input('Team B Adjusted Tempo: '))
-
-    # B expected winning probability:
-    PythagB = pythag(AdjOB, AdjDB)
-    #print(str(PythagB))
-
     # Log5: Prob Team A wins against Team B (similar to ELO method in chess)
     def log5(ProbA, ProbB):
 
@@ -46,29 +66,6 @@ while Play:
 
         return EWA
 
-    AdjAProb = log5(PythagA, PythagB)
-    AdjBProb = 1 - AdjAProb
-
-    print('Adjusted probability of team A winning: ' + str(AdjAProb))
-    print('Adjusted probability of team B winning: ' + str(AdjBProb))
-
-    #round needed to calculate expected points
-    round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
-
-    initialpoints = 2**round
-
-    #expected value for the teams (including non-bonus points):
-    #NOTE: is this initial points + seed or initial points * seed?
-    AReturn = AdjAProb * (initialpoints + ASeed)
-    BReturn = AdjBProb * (initialpoints + BSeed)
-
-    #in the case that the bonus is initial points * seed, not +
-    #AReturn = AdjAProb * (initialpoints * ASeed)
-    #BReturn = AdjBProb * (initialpoints * BSeed)
-
-    print('Team A expected winnings: %s' % str(AReturn))
-    print('Team B expected winnings: %s' % str(BReturn))
-    
     #predicts tempo (possessions per 40 minutes)
     def tempo(AdjTA, AdjTB):
         
@@ -77,8 +74,6 @@ while Play:
         ET = (AdjTA / 67.5) * (AdjTB / 67.5) * 67.5
 
         return ET
-
-    print('The expected tempo for this matchup is: ' + str(tempo(ATempo, BTempo)))
 
     #finally expected points for team A and team B
     def points(APointsFor, BPointsFor, APointsAgainst, BPointsAgainst):
@@ -94,6 +89,53 @@ while Play:
         EBP = EBP * (ET / 100)
         
         return EAP, EBP
+
+    # user input and values for team A and B
+    TeamA = input('Team A Name (As seen on KenPom): ')
+    ASeed = int(input('Team A official seed: '))
+    AdjOA = AdjOSearch(TeamA)
+    AdjDA = AdjDSearch(TeamA)
+    ATempo = AdjTSearch(TeamA)
+
+    # Team B:
+    TeamB = input('Team B Name (As seen on KenPom): ')
+    BSeed = int(input('Team B official seed: '))
+    AdjOB = AdjOSearch(TeamB)
+    AdjDB = AdjDSearch(TeamB)
+    BTempo = AdjTSearch(TeamB)
+
+    #round needed to calculate expected points
+    round = int(input('Round of matchup (Round 1 = 1, Round 2 = 2, Sweet 16 = 3, Elite 8 = 4, Final Four = 5. Championship = 6): ')) - 1
+
+    #calculates team A expected winning probability: 
+    PythagA = pythag(AdjOA, AdjDA)
+    # print(str(PythagA))
+
+    # B expected winning probability:
+    PythagB = pythag(AdjOB, AdjDB)
+    #print(str(PythagB))
+
+    AdjAProb = log5(PythagA, PythagB)
+    AdjBProb = 1 - AdjAProb
+
+    print('Adjusted probability of team A winning: ' + str(AdjAProb))
+    print('Adjusted probability of team B winning: ' + str(AdjBProb))
+
+    initialpoints = 2**round
+
+    #expected value for the teams (including non-bonus points):
+    #NOTE: is this initial points + seed or initial points * seed?
+    AReturn = AdjAProb * (initialpoints + ASeed)
+    BReturn = AdjBProb * (initialpoints + BSeed)
+
+    #in the case that the bonus is initial points * seed, not +
+    #AReturn = AdjAProb * (initialpoints * ASeed)
+    #BReturn = AdjBProb * (initialpoints * BSeed)
+
+    print('Team A expected winnings: %s' % str(AReturn))
+    print('Team B expected winnings: %s' % str(BReturn))
+    
+    print('The expected tempo for this matchup is: ' + str(tempo(ATempo, BTempo)))
 
     print('The expected points scored for team A and team B, respectively: ' + str(points(AdjOA, AdjOB, AdjDA, AdjDB)))
 
