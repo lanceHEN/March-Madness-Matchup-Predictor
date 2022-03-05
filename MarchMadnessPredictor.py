@@ -1,7 +1,7 @@
 # This will be separated into three parts.
-# First calculates pythag, accounting for offensive and defensive efficiency.
-# Second is log5, which calculates the probability of team A beating team B. Also added expected value to determine which team is more rewarding to choose.
-# Third is the actual simulation of team A vs team B including tempos and predicted scores.
+# First calculates pythag (A.K.A. how "good" team X is), accounting for offensive and defensive efficiency.
+# Second is log5, which calculates the probability of team A beating team B. Also added expected value to determine which team is more rewarding to choose on average.
+# Third calculates expected tempo and scores.
 # Don't take this too seriously! Just a fun little project.
 
 import math
@@ -39,7 +39,7 @@ while Play:
     PythagB = pythag(AdjOB, AdjDB)
     #print(str(PythagB))
 
-    # Log5: Prob Team A wins against Team B (similar to ELO)
+    # Log5: Prob Team A wins against Team B (similar to ELO method in chess)
     def log5(ProbA, ProbB):
 
         EWA = (ProbA - ProbA *  ProbB) / (ProbA + ProbB -2 * ProbA * ProbB)
@@ -69,7 +69,7 @@ while Play:
     print('Team A expected winnings: %s' % str(AReturn))
     print('Team B expected winnings: %s' % str(BReturn))
     
-    #tempo time!
+    #predicts tempo (possessions per 40 minutes)
     def tempo(AdjTA, AdjTB):
         
         global ET
@@ -80,12 +80,12 @@ while Play:
 
     print('The expected tempo for this matchup is: ' + str(tempo(ATempo, BTempo)))
 
-    #finally expected points!
+    #finally expected points for team A and team B
     def points(APointsFor, BPointsFor, APointsAgainst, BPointsAgainst):
 
         #team A expected points
         EAP = (APointsFor / 103.7) * (BPointsAgainst / 103.7) * 103.7
-        #accounting for expected tempo and rounding to a whole number:
+        #accounting for expected tempo:
         EAP = EAP * (ET / 100)
 
         #team B expected points
