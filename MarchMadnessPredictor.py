@@ -18,7 +18,7 @@ while Play:
 
         return EW
 
-    # user input for team A and B offense/defense efficiency:
+    # user input for team A and B values
     # Team A:
     ASeed = int(input('Team A official seed: '))
     AdjOA = float(input('Team A adjusted offensive efficiency: '))
