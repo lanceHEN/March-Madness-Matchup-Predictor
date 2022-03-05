@@ -41,7 +41,7 @@ while Play:
 
         total_occurence = boolean_findings.sum()
 
-        if(total_occurence) != 1 and TeamName != df[1][0]:
+        if(total_occurence) == 0 and TeamName != df[1][0]:
             print('Error: Team name not found. Check KenPom and try again.')
             return False
 
