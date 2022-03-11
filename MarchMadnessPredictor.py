@@ -15,7 +15,7 @@ import lxml
 
 #scrapes KenPom:
 # Base url
-base_url = 'http://kenpom.com/index.php'
+base_url = 'https://kenpom.com/index.php?y=2021'
 
 f = requests.get(base_url)
 soup = BeautifulSoup(f.text, 'lxml')
@@ -35,22 +35,47 @@ df = pd.read_html(table)[0]
 # allows user to play multiple times.
 Play = True
 while Play:
+    #separates Team Name from Seed. Why must you do this to me KenPom???
+    def sep(TeamName):
+        Seed = []
+        Name = ''
+        for t in TeamName:
+
+            try:
+                Seed.append(float(t))
+            except ValueError:
+                Name = Name + t
+
+        l = len(Name)
+        Name = Name[:l-1]
+
+        if Seed:
+            return Name, Seed[0]
+
+        else:
+            return Name, False
+    
     #makes sure Team is on KenPom
     def NameCheck(TeamName):
-        boolean_findings = df[1].str.contains(TeamName)
+        try:
+            boolean_findings = df[1].str.contains(TeamName)
 
-        total_occurence = boolean_findings.sum()
+            total_occurence = boolean_findings.sum()
 
-        if(total_occurence) == 0 and TeamName != df[1][0]:
-            print('Error: Team name not found. Check KenPom and try again (Capitalization matters!).')
-            return False
+            if(total_occurence) == 0 and TeamName != df[1][0]:
+                print('Error: Team name not found. Check KenPom and try again (Capitalization matters!).')
+                return False
 
-        #the sum for the best team is still zero, so we have to account for this exception
-        elif TeamName == df[1][0]:
-            return True
+            #the sum for the best team is still zero, so we have to account for this exception
+            elif TeamName == df[1][0]:
+                return True
     
-        else:
-            return True
+            else:
+                return True
+
+        except:
+            print('Error: Team name not found. Check KenPom and try again (Capitalization matters!). Make sure team has correct seed.')
+            return False
     
     #finds Adjusted Offensive Efficiency of team
     def AdjOSearch(Team):
@@ -108,71 +133,41 @@ while Play:
         EBP = (BPointsFor / AvgPoints) * (APointsAgainst / AvgPoints) * AvgPoints
         #accounting for expected tempo:
         EBP = EBP * (ET / 100)
-        
+
         return EAP, EBP
 
     # user input and values for team A and B
     #Team A Name + check to make sure it's on KenPom
     NamedTeamA = False
     while not NamedTeamA:
-        TeamA = input('Team A Name (As seen on KenPom): ')
-        if NameCheck(TeamA) == True:
+        ANameAndSeed = input('Team A Name and Seed (Name and Seed separated with space. Ex: "Gonzaga 1"): ')
+        if NameCheck(ANameAndSeed) and sep(ANameAndSeed)[1]:
+            TeamA = sep(ANameAndSeed)[0]
+            ASeed = sep(ANameAndSeed)[1]
             NamedTeamA = True
 
         else:
             NamedTeamA = False
 
-    #Team A seed + check to make sure it's between 1 and 16
-    EnteredASeed = False
-    while not EnteredASeed:
-        try:
-            ASeed = int(input('Team A official seed: '))
-            
-            if ASeed >= 1 and ASeed <= 16:
-                EnteredASeed = True
-            
-            else:
-                print('Seed must be a number between 1 and 16. Try again.')
-                EnteredASeed = False
-
-        except:
-            print('Seed must be a number between 1 and 16. Try again.')
-            EnteredASeed = False
-    
-    AdjOA = AdjOSearch(TeamA)
-    AdjDA = AdjDSearch(TeamA)
-    ATempo = AdjTSearch(TeamA)
+    AdjOA = AdjOSearch(ANameAndSeed)
+    AdjDA = AdjDSearch(ANameAndSeed)
+    ATempo = AdjTSearch(ANameAndSeed)
 
     # Team B name + check to make sure it's on KenPom
     NamedTeamB = False
     while not NamedTeamB:
-        TeamB = input('Team B Name (As seen on KenPom): ')
-        if NameCheck(TeamB) == True:
+        BNameAndSeed = input('Team B Name and Seed (Name and Seed separated with space. Ex: "Gonzaga 1"): ')
+        if NameCheck(BNameAndSeed) and sep(BNameAndSeed)[1]:
+            TeamB = sep(BNameAndSeed)[0]
+            BSeed = sep(BNameAndSeed)[1]
             NamedTeamB = True
 
         else:
             NamedTeamB = False
-    
-    #Team B seed + check to make sure it's between 1 and 16
-    EnteredBSeed = False
-    while not EnteredBSeed:
-        try:
-            BSeed = int(input('Team B official seed: '))
-            
-            if BSeed >= 1 and BSeed <= 16:
-                EnteredBSeed = True
-            
-            else:
-                print('Seed must be a number between 1 and 16. Try again.')
-                EnteredBSeed = False
 
-        except:
-            print('Seed must be a number between 1 and 16. Try again.')
-            EnteredBSeed = False
-
-    AdjOB = AdjOSearch(TeamB)
-    AdjDB = AdjDSearch(TeamB)
-    BTempo = AdjTSearch(TeamB)
+    AdjOB = AdjOSearch(BNameAndSeed)
+    AdjDB = AdjDSearch(BNameAndSeed)
+    BTempo = AdjTSearch(BNameAndSeed)
 
     #round needed to calculate expected points + check to make sure it's a number between 1 and 6
     EnteredRound = False
@@ -201,26 +196,29 @@ while Play:
     AdjAProb = log5(PythagA, PythagB)
     AdjBProb = 1 - AdjAProb
 
-    print('Adjusted probability of team A winning: ' + str(AdjAProb))
-    print('Adjusted probability of team B winning: ' + str(AdjBProb))
+    print('Adjusted probability of ' + TeamA + ' winning: ' + str(AdjAProb))
+    print('Adjusted probability of ' + TeamB + ' winning: ' + str(AdjBProb))
 
     initialpoints = 2**round
 
     #expected value for the teams (including non-bonus points):
     #NOTE: is this initial points + seed or initial points * seed?
-    AReturn = AdjAProb * (initialpoints + ASeed)
-    BReturn = AdjBProb * (initialpoints + BSeed)
+    #AReturn = AdjAProb * (initialpoints + ASeed)
+    #BReturn = AdjBProb * (initialpoints + BSeed)
 
     #in the case that the bonus is initial points * seed, not +
-    #AReturn = AdjAProb * (initialpoints * ASeed)
-    #BReturn = AdjBProb * (initialpoints * BSeed)
+    AReturn = AdjAProb**1.5 * (initialpoints * int(ASeed))
+    BReturn = AdjBProb**1.5 * (initialpoints * int(BSeed))
 
-    print('Team A expected winnings: %s' % str(AReturn))
-    print('Team B expected winnings: %s' % str(BReturn))
+    print(TeamA + ' expected winnings: %s' % str(AReturn))
+    print(TeamB + ' expected winnings: %s' % str(BReturn))
     
     print('The expected tempo for this matchup is: ' + str(tempo(ATempo, BTempo)))
 
-    print('The expected points scored for team A and team B, respectively: ' + str(points(AdjOA, AdjOB, AdjDA, AdjDB)))
+    print('The expected points scored for ' + TeamA + ': ' + str(points(AdjOA, AdjOB, AdjDA, AdjDB)[0]))
+    print('The expected points scored for ' + TeamB + ': ' + str(points(AdjOA, AdjOB, AdjDA, AdjDB)[1]))
+
+    #print('The expected total points scored for both teams: ' + str(points(AdjOA, AdjOB, AdjDA, AdjDB)[2])))
 
     #this simply allows user to try another simulation
     playagain = False
