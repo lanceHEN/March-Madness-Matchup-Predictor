@@ -208,12 +208,12 @@ while Play:
 
     #expected value for the teams (including non-bonus points):
     #NOTE: is this initial points + seed or initial points * seed?
-    AReturn = AdjAProb**1.5 * (initialpoints + ASeed)
-    BReturn = AdjBProb**1.5 * (initialpoints + BSeed)
+    #AReturn = AdjAProb**math.sqrt(2) * (initialpoints + ASeed)
+    #BReturn = AdjBProb**math.sqrt(2) * (initialpoints + BSeed)
 
     #in the case that the bonus is initial points * seed, not +
-    #AReturn = AdjAProb * (initialpoints * ASeed)
-    #BReturn = AdjBProb * (initialpoints * BSeed)
+    AReturn = AdjAProb**2 * (initialpoints * ASeed)
+    BReturn = AdjBProb**2 * (initialpoints * BSeed)
 
     print(TeamA + ' expected winnings: %s' % str(AReturn))
     print(TeamB + ' expected winnings: %s' % str(BReturn))

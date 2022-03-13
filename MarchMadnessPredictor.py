@@ -207,8 +207,8 @@ while Play:
     #BReturn = AdjBProb * (initialpoints + BSeed)
 
     #in the case that the bonus is initial points * seed, not +
-    AReturn = AdjAProb**1.5 * (initialpoints * int(ASeed))
-    BReturn = AdjBProb**1.5 * (initialpoints * int(BSeed))
+    AReturn = AdjAProb**2 * (initialpoints * int(ASeed))
+    BReturn = AdjBProb**2 * (initialpoints * int(BSeed))
 
     print(TeamA + ' expected winnings: %s' % str(AReturn))
     print(TeamB + ' expected winnings: %s' % str(BReturn))
