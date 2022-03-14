@@ -15,7 +15,7 @@ import lxml
 
 #scrapes KenPom:
 # Base url
-base_url = 'https://kenpom.com/index.php?y=2021'
+base_url = 'https://kenpom.com/'
 
 f = requests.get(base_url)
 soup = BeautifulSoup(f.text, 'lxml')
@@ -37,12 +37,12 @@ Play = True
 while Play:
     #separates Team Name from Seed. Why must you do this to me KenPom???
     def sep(TeamName):
-        Seed = []
+        Seed = ''
         Name = ''
         for t in TeamName:
 
             try:
-                Seed.append(float(t))
+                Seed = Seed + str(int(t))
             except ValueError:
                 Name = Name + t
 
@@ -50,7 +50,7 @@ while Play:
         Name = Name[:l-1]
 
         if Seed:
-            return Name, Seed[0]
+            return Name, int(Seed)
 
         else:
             return Name, False
@@ -145,6 +145,7 @@ while Play:
             TeamA = sep(ANameAndSeed)[0]
             ASeed = sep(ANameAndSeed)[1]
             NamedTeamA = True
+            
 
         else:
             NamedTeamA = False
@@ -168,6 +169,9 @@ while Play:
     AdjOB = AdjOSearch(BNameAndSeed)
     AdjDB = AdjDSearch(BNameAndSeed)
     BTempo = AdjTSearch(BNameAndSeed)
+
+    #print(str(ASeed))
+    #print(str(BSeed))
 
     #round needed to calculate expected points + check to make sure it's a number between 1 and 6
     EnteredRound = False
