@@ -3,6 +3,7 @@
 # Second is log5, which calculates the probability of team A beating team B. Also added expected value to determine which team is more rewarding to choose on average.
 # Third calculates expected tempo and scores.
 # Don't take this too seriously! Just a fun little project.
+#now requires you to store file locally
 
 import math
 import random
@@ -13,12 +14,9 @@ import numpy as np
 import re
 import lxml
 
-#scrapes KenPom:
-# Base url
-base_url = 'http://kenpom.com/index.php'
-
-f = requests.get(base_url)
-soup = BeautifulSoup(f.text, 'lxml')
+#insert file location below here:
+with open("/Users/lancehendricks/Documents/Kenpoms/kenpom2-19-23.html") as fp:
+    soup = BeautifulSoup(fp, 'html.parser')
 table_html = soup.find_all('table', {'id': 'ratings-table'})
 
 thead = table_html[0].find_all('thead')
@@ -212,8 +210,8 @@ while Play:
     #BReturn = AdjBProb**math.sqrt(2) * (initialpoints + BSeed)
 
     #in the case that the bonus is initial points * seed, not +
-    AReturn = AdjAProb**2 * (initialpoints * ASeed)
-    BReturn = AdjBProb**2 * (initialpoints * BSeed)
+    AReturn = AdjAProb * (initialpoints * ASeed)
+    BReturn = AdjBProb * (initialpoints * BSeed)
 
     print(TeamA + ' expected winnings: %s' % str(AReturn))
     print(TeamB + ' expected winnings: %s' % str(BReturn))
