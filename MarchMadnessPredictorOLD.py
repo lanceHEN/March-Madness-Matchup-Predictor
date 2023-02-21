@@ -15,7 +15,10 @@ import re
 import lxml
 
 #insert file location below here:
-with open("/Users/lancehendricks/Documents/Kenpoms/kenpom2-19-23.html") as fp:
+
+path = input('Paste Kenpom .html file here: ')
+
+with open(path) as fp:
     soup = BeautifulSoup(fp, 'html.parser')
 table_html = soup.find_all('table', {'id': 'ratings-table'})
 
